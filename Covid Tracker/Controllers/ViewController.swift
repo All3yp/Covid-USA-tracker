@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Charts
 
 class ViewController: UIViewController {
 
@@ -30,6 +31,7 @@ class ViewController: UIViewController {
         didSet {
             DispatchQueue.main.async {
                 self.tableView.reloadData()
+                self.createGraph()
             }
         }
     }
@@ -84,6 +86,38 @@ class ViewController: UIViewController {
         present(navVC, animated: true)
     }
 
+    // MARK: - Charts
+    private func createGraph() {
+        let headerView = UIView(frame: CGRect(
+                                    x: 0,
+                                    y: 0,
+                                    width: view.frame.size.width,
+                                    height: view.frame.size.width/1.5)
+        )
+        let chart = BarChartView(frame: CGRect(
+                                    x: 0,
+                                    y: 0,
+                                    width: view.frame.size.width,
+                                    height: view.frame.size.width/1.5)
+        )
+        var entries: [BarChartDataEntry] = []
+        let set = dayData.prefix(30)
+
+        for index in 0..<set.count {
+            let data = set[index]
+            entries.append(.init(x: Double(index), y: Double(data.count)))
+        }
+        let dataSet = BarChartDataSet(entries: entries)
+        let data: BarChartData = BarChartData(dataSet: dataSet)
+
+        dataSet.colors = ChartColorTemplates.joyful()
+
+        chart.data = data
+
+        headerView.addSubview(chart)
+        headerView.clipsToBounds = true
+        tableView.tableHeaderView = headerView
+    }
 }
 
 extension ViewController: UITableViewDataSource {
