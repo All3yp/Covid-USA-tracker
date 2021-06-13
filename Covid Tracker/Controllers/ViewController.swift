@@ -6,11 +6,19 @@
 //
 
 import UIKit
-import Charts
+//import Charts
 
 class ViewController: UIViewController {
 
     private var scope: APICaller.DataScope = .national
+    
+    lazy var chartView: ChartView = ChartView(
+        frame: CGRect(
+            x: 0,
+            y: 0,
+            width: view.frame.size.width,
+            height: view.frame.size.width/1.5)
+    )
 
     static let numberFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -29,13 +37,15 @@ class ViewController: UIViewController {
 
     private var dayData: [DayData] = [] {
         didSet {
-            DispatchQueue.main.async {
-                self.tableView.reloadData()
-                self.createGraph()
+            DispatchQueue.main.async { [weak self] in
+                self?.tableView.reloadData()
+                self?.chartView.createGraph(dayData: self!.dayData)
+//                self.createGraph()
             }
         }
     }
 
+    // MARK: - ViewController Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -87,6 +97,7 @@ class ViewController: UIViewController {
     }
 
     // MARK: - Charts
+    /*
     private func createGraph() {
         let headerView = UIView(frame: CGRect(
                                     x: 0,
@@ -118,6 +129,7 @@ class ViewController: UIViewController {
         headerView.clipsToBounds = true
         tableView.tableHeaderView = headerView
     }
+ */
 }
 
 extension ViewController: UITableViewDataSource {
@@ -130,6 +142,7 @@ extension ViewController: UITableViewDataSource {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
+        tableView.tableHeaderView = chartView.headerView
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -147,6 +160,6 @@ extension ViewController: UITableViewDataSource {
         guard let date = DateFormatter.americanDateFormatter.date(from: data.date) else { return nil }
         let dateString = DateFormatter.brazilianDateFormatter.string(from: date)
         let total = Self.numberFormatter.string(from: NSNumber(value: data.count))
-        return "\(dateString): \(total ?? "\(data.count)")"
+        return "\(dateString), total cases: \(total ?? "\(data.count)")"
     }
 }
